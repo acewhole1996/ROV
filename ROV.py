@@ -16,6 +16,7 @@ from picamera2.outputs import FileOutput
 # Define global variables
 recording = False
 fourcc = cv2.VideoWriter_fourcc(*'XVID')
+save_dir = "/path/to/your/directory" 
 
 PAGE = """\
 <!DOCTYPE html>
