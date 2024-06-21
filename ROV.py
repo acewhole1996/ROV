@@ -3,10 +3,17 @@ import logging
 import socketserver
 from http import server
 from threading import Condition
+import cv2  # Import OpenCV library for video recording
 
 from picamera2 import Picamera2
 from picamera2.encoders import JpegEncoder
 from picamera2.outputs import FileOutput
+
+
+# Define global variables (not recommended, but for reference in this example)
+recording = False
+video_writer = None
+save_path = "/path/to/save/directory/on/client"  # Replace with client-side directory
 
 PAGE = """\
 <!DOCTYPE html>
@@ -41,11 +48,23 @@ PAGE = """\
     right: 10px;
   }
 
+  /* Style the record button */
+  #record-button {
+    position: absolute;
+    top: 80px; /* Adjust position as desired */
+    left: 10px; /* Adjust position as desired */
+    padding: 10px 20px; /* Add padding for better appearance */
+    background-color: #ccc; /* Set background color */
+    border: 1px solid #bbb; /* Add a border */
+    cursor: pointer; /* Indicate clickable behavior */
+  }
 </style>
 </head>
 <body>
   <img id="video-stream" src="stream.mjpg" />
   <div id="overlay">ARKPAD ROV V3 (EXPERIMENTAL)</div>
+
+  <button id="record-button" onclick="toggleRecording()">Record</button>
 
   <select id="resolution-select" onchange="changeResolution()">
     <option value="640x480">Low Quality</option>
@@ -60,22 +79,41 @@ PAGE = """\
       var selectedResolution = document.getElementById("resolution-select").value;
       fetch('/resolution/' + selectedResolution); // Send request to change resolution
     }
+
+    function toggleRecording() {
+      recording = !recording;
+      document.getElementById("record-button").textContent = recording ? "Stop Recording" : "Record";
+    }
   </script>
 </body>
 </html>
 """
-#######################functions
 
-#########################
+
+####################### functions
+
+
+def toggleRecording():
+  global recording, video_writer  # Access global variables (not recommended for production)
+  recording = not recording
+  if recording:
+    # Start recording
+    global save_path  # Access global variable (not recommended for production)
+    filename = f"{save_path}/recording_{time.strftime('%Y-%m-%d_%H-%M-%S')}.avi"
+    video_writer = cv2.VideoWriter(filename, cv2.VideoWriter_fourcc(*'XVID'), 25.0, (1920, 1080))  # Replace with camera resolution
+
+
 class StreamingOutput(io.BufferedIOBase):
-    def __init__(self):
-        self.frame = None
-        self.condition = Condition()
+  def __init__(self):
+    self.frame = None
+    self.condition = Condition()
 
-    def write(self, buf):
-        with self.condition:
-            self.frame = buf
-            self.condition.notify_all()
+  def write(self, buf):
+    with self.condition:
+      self.frame = buf
+      if recording:
+        # Convert frame to BGR format for OpenCV and write to video
+        frame = cv2.imdecode(np.frombuffer(buf, np.uint8))
 
 class StreamingHandler(server.BaseHTTPRequestHandler):
     def do_GET(self):
