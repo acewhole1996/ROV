@@ -111,9 +111,7 @@ PAGE = """\
 </body>
 </html>
 """
-#######################functions
 
-#########################
 class StreamingOutput(io.BufferedIOBase):
     def __init__(self):
         self.frame = None
@@ -127,6 +125,18 @@ class StreamingOutput(io.BufferedIOBase):
                 frame = cv2.imdecode(np.frombuffer(buf, np.uint8), cv2.IMREAD_COLOR)
                 video_writer.write(frame)  # Write frame to video
             self.condition.notify_all()
+#######################functions
+    def toggleRecording():
+        global recording, video_writer  # Access global variables
+
+         recording = not recording
+
+        if recording:
+        # Start recording
+        global output  # Assuming output is a StreamingOutput instance
+       filename = f"recording_{time.strftime('%Y-%m-%d_%H-%M-%S')}.avi"
+
+#########################
 
 class StreamingHandler(server.BaseHTTPRequestHandler):
     def do_GET(self):
