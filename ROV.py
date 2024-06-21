@@ -115,7 +115,6 @@ class StreamingHandler(server.BaseHTTPRequestHandler):
                 resolution_str = self.path.split('/')[2]
                 width, height = map(int, resolution_str.split('x'))
                 picam2.stop_recording()
-                picam2.configure(picam2.create_h264_configuration(main={"size": (width, height)}))
                 picam2.start_recording(H264Encoder(), 'stream.h264')
                 self.send_response(200)
                 self.send_header('Content-Type', 'text/plain')
@@ -135,8 +134,9 @@ class StreamingServer(socketserver.ThreadingMixIn, server.HTTPServer):
 
 # Initialize the camera and streaming output
 picam2 = Picamera2()
-picam2.configure(picam2.create_h264_configuration(main={"size": (1920, 1080)}))
 output = StreamingOutput()
+
+# Start the camera recording with H.264 encoding
 picam2.start_recording(H264Encoder(), 'stream.h264')
 
 # Start the HTTP server to listen for incoming connections
