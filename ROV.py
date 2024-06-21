@@ -18,7 +18,7 @@ PAGE = """\
     margin: 0;
     padding: 0;
     height: 100vh;
-    overflow: hidden; /* Hide any scrollbarsxaaaa */
+    overflow: hidden; /* Hide any scrollbarsxaaa */
   }
   #video-stream {
     width: 100vw;
