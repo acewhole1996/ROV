@@ -18,12 +18,14 @@ PAGE = """\
     margin: 0;
     padding: 0;
     height: 100vh;
-    overflow: hidden; /* Hide any scrollbarsz */
+    overflow: hidden; /* Hide any scrollbars */
   }
+
   #video-stream {
     width: 100vw;
     height: 100vh;
   }
+
   #overlay {
     position: absolute;
     top: 10px; /* Adjust top position for desired margin */
@@ -32,17 +34,31 @@ PAGE = """\
     color: white; /* Set overlay text color */
     font-size: 2em; /* Adjust font size as needed */
   }
+
   #resolution-select {
     position: absolute;
     top: 50px; /* Adjust position as desired */
     right: 10px;
   }
+
+  /* Style the record button */
+  #record-button {
+    position: absolute;
+    top: 80px; /* Adjust position as desired */
+    left: 10px; /* Adjust position as desired */
+    padding: 10px 20px; /* Add padding for better appearance */
+    background-color: #ccc; /* Set background color */
+    border: 1px solid #bbb; /* Add a border */
+    cursor: pointer; /* Indicate clickable behavior */
+  }
 </style>
 </head>
 <body>
   <img id="video-stream" src="stream.mjpg" />
-  <div id="overlay">ARKPAD ROV V3 (EXPERIMENTALx)</div>
+  <div id="overlay">ARKPAD ROV V3 (EXPERIMENTAL)</div>
+
   <button id="record-button" onclick="toggleRecording()">Record</button>
+
   <select id="resolution-select" onchange="changeResolution()">
     <option value="320x240">320x240</option>
     <option value="640x480" selected>640x480 (Default)</option>
@@ -56,8 +72,18 @@ PAGE = """\
       var selectedResolution = document.getElementById("resolution-select").value;
       fetch('/resolution/' + selectedResolution); // Send request to change resolution
     }
+
     function toggleRecording() {
-      // ... existing recording logic ...
+      recording = !recording; // Toggle recording state
+
+      // Update button text or style based on recording state (optional)
+      if (recording) {
+        document.getElementById("record-button").textContent = "Stop Recording";
+      } else {
+        document.getElementById("record-button").textContent = "Record";
+      }
+
+      // Your existing recording logic here
     }
   </script>
 </body>
