@@ -3,10 +3,8 @@ import logging
 import socketserver
 from http import server
 from threading import Condition
-
 from picamera2 import Picamera2
-from picamera2.encoders import JpegEncoder
-from picamera2.outputs import FileOutput
+from picamera2.encoders import H264Encoder
 
 # HTML page served to clients
 PAGE = """\
@@ -67,7 +65,7 @@ PAGE = """\
 """
 
 # Streaming output class to capture frames
-class StreamingOutput(io.BufferedIOBase):
+class StreamingOutput:
     def __init__(self):
         self.frame = None
         self.condition = Condition()
@@ -117,8 +115,8 @@ class StreamingHandler(server.BaseHTTPRequestHandler):
                 resolution_str = self.path.split('/')[2]
                 width, height = map(int, resolution_str.split('x'))
                 picam2.stop_recording()
-                picam2.configure(picam2.create_video_configuration(main={"size": (width, height)}))
-                picam2.start_recording(JpegEncoder(), FileOutput(output))
+                picam2.configure(picam2.create_h264_configuration(main={"size": (width, height)}))
+                picam2.start_recording(H264Encoder(), 'stream.h264')
                 self.send_response(200)
                 self.send_header('Content-Type', 'text/plain')
                 self.end_headers()
@@ -137,9 +135,9 @@ class StreamingServer(socketserver.ThreadingMixIn, server.HTTPServer):
 
 # Initialize the camera and streaming output
 picam2 = Picamera2()
-picam2.configure(picam2.create_video_configuration(main={"size": (1920, 1080)}))
+picam2.configure(picam2.create_h264_configuration(main={"size": (1920, 1080)}))
 output = StreamingOutput()
-picam2.start_recording(JpegEncoder(), FileOutput(output))
+picam2.start_recording(H264Encoder(), 'stream.h264')
 
 # Start the HTTP server to listen for incoming connections
 try:
