@@ -129,12 +129,12 @@ class StreamingOutput(io.BufferedIOBase):
     def toggleRecording():
         global recording, video_writer  # Access global variables
 
-         recording = not recording
+        recording = not recording
 
         if recording:
         # Start recording
-        global output  # Assuming output is a StreamingOutput instance
-       filename = f"recording_{time.strftime('%Y-%m-%d_%H-%M-%S')}.avi"
+         global output  # Assuming output is a StreamingOutput instance
+         filename = f"recording_{time.strftime('%Y-%m-%d_%H-%M-%S')}.avi"
 
 #########################
 
