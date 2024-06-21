@@ -61,9 +61,9 @@ PAGE = """\
 
   <select id="resolution-select" onchange="changeResolution()">
     <option value="320x240">320x240</option>
-    <option value="640x480" selected>640x480 (Default)</option>
-    <option value="1280x720">1280x720 (HD)</option>
-    <option value="1920x1080">1920x1080 (Full HD)</option>
+    <option value="640x480" selected>640x480</option>
+    <option value="1280x720">1280x720 (Default)</option>
+    <option value="2560x1920">2560x1920 (Fisheye HD)</option>
   </select>
   <script>
     var recording = false;
@@ -192,7 +192,7 @@ class StreamingServer(socketserver.ThreadingMixIn, server.HTTPServer):
 
 
 picam2 = Picamera2()
-picam2.configure(picam2.create_video_configuration(main={"size": (320, 240)}))
+picam2.configure(picam2.create_video_configuration(main={"size": (1080, 720)}))
 output = StreamingOutput()
 picam2.start_recording(JpegEncoder(), FileOutput(output))
 
