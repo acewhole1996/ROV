@@ -8,6 +8,7 @@ from picamera2 import Picamera2
 from picamera2.encoders import JpegEncoder
 from picamera2.outputs import FileOutput
 
+# HTML page served to clients
 PAGE = """\
 <!DOCTYPE html>
 <html>
@@ -64,9 +65,8 @@ PAGE = """\
 </body>
 </html>
 """
-#######################functions
 
-#########################
+# Streaming output class to capture frames
 class StreamingOutput(io.BufferedIOBase):
     def __init__(self):
         self.frame = None
@@ -77,10 +77,10 @@ class StreamingOutput(io.BufferedIOBase):
             self.frame = buf
             self.condition.notify_all()
 
+# Handler for serving HTTP requests
 class StreamingHandler(server.BaseHTTPRequestHandler):
     def do_GET(self):
-        global picam2  # Assuming picam2 is defined globally
-        #output = StreamingOutput()
+        global picam2, output  # Assuming picam2 and output are defined globally
         if self.path == '/':
             self.send_response(301)
             self.send_header('Location', '/index.html')
@@ -92,7 +92,6 @@ class StreamingHandler(server.BaseHTTPRequestHandler):
             self.send_header('Content-Length', len(content))
             self.end_headers()
             self.wfile.write(content)
-########
         elif self.path == '/stream.mjpg':
             self.send_response(200)
             self.send_header('Age', 0)
@@ -112,43 +111,37 @@ class StreamingHandler(server.BaseHTTPRequestHandler):
                     self.wfile.write(frame)
                     self.wfile.write(b'\r\n')
             except Exception as e:
-                logging.warning(
-                    'Removed streaming client %s: %s',
-                    self.client_address, str(e))
-########
-        elif self.path.startswith('/resolution/'):  # Corrected indentation
+                logging.warning('Removed streaming client %s: %s', self.client_address, str(e))
+        elif self.path.startswith('/resolution/'):
             try:
-                # Extract resolution from path
-
                 resolution_str = self.path.split('/')[2]
                 width, height = map(int, resolution_str.split('x'))
                 picam2.stop_recording()
                 picam2.configure(picam2.create_video_configuration(main={"size": (width, height)}))
                 picam2.start_recording(JpegEncoder(), FileOutput(output))
-
                 self.send_response(200)
                 self.send_header('Content-Type', 'text/plain')
                 self.end_headers()
-                self.wfile.write(b'Resolution changed to: ' + resolution_str.encode())
+                self.wfile.write(f'Resolution changed to: {resolution_str}'.encode())
             except Exception as e:
                 logging.warning("Error changing resolution: %s", str(e))
                 self.send_error(500)
-
         else:
             self.send_error(404)
             self.end_headers()
 
-
+# Streaming server configuration
 class StreamingServer(socketserver.ThreadingMixIn, server.HTTPServer):
     allow_reuse_address = True
     daemon_threads = True
 
-
+# Initialize the camera and streaming output
 picam2 = Picamera2()
 picam2.configure(picam2.create_video_configuration(main={"size": (1920, 1080)}))
 output = StreamingOutput()
 picam2.start_recording(JpegEncoder(), FileOutput(output))
 
+# Start the HTTP server to listen for incoming connections
 try:
     address = ('', 7123)
     server = StreamingServer(address, StreamingHandler)
