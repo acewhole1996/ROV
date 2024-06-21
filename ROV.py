@@ -126,15 +126,13 @@ class StreamingOutput(io.BufferedIOBase):
                 video_writer.write(frame)  # Write frame to video
             self.condition.notify_all()
 #######################functions
-    def toggleRecording():
-        global recording, video_writer  # Access global variables
-
-        recording = not recording
-
-        if recording:
-        # Start recording
-         global output  # Assuming output is a StreamingOutput instance
+    def toggleRecording(recording, video_writer):
+         # Not recommended for global variables, but included for reference
+       recording = not recording
+       if recording:
+    # Start recording
          filename = f"recording_{time.strftime('%Y-%m-%d_%H-%M-%S')}.avi"
+    # ... rest of recording logic using video_writer
 
 #########################
 
