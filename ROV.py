@@ -112,15 +112,6 @@ PAGE = """\
 </html>
 """
 #######################functions
-def toggleRecording():
-  global recording, video_writer  # Access global variables
-
-  recording = not recording
-
-  if recording:
-    # Start recording
-    global output  # Assuming output is a StreamingOutput instance
-    filename = f"recording_{time.strftime('%Y-%m-%d_%H-%M-%S')}.avi"
 
 #########################
 class StreamingOutput(io.BufferedIOBase):
