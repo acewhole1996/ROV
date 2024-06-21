@@ -1,22 +1,12 @@
 import io
 import logging
-import os
 import socketserver
-import time
 from http import server
 from threading import Condition
-
-import cv2  # Import OpenCV library
-
 from picamera2 import Picamera2
 from picamera2.encoders import JpegEncoder
 from picamera2.outputs import FileOutput
 
-
-# Define global variables
-recording = False
-fourcc = cv2.VideoWriter_fourcc(*'XVID')
-save_dir = "/path/to/your/directory" 
 
 PAGE = """\
 <!DOCTYPE html>
@@ -51,16 +41,7 @@ PAGE = """\
     right: 10px;
   }
 
-  /* Style the record button */
-  #record-button {
-    position: absolute;
-    top: 80px; /* Adjust position as desired */
-    left: 10px; /* Adjust position as desired */
-    padding: 10px 20px; /* Add padding for better appearance */
-    background-color: #ccc; /* Set background color */
-    border: 1px solid #bbb; /* Add a border */
-    cursor: pointer; /* Indicate clickable behavior */
-  }
+
 
   #save-directory {
     position: absolute;
@@ -76,7 +57,6 @@ PAGE = """\
   <img id="video-stream" src="stream.mjpg" />
   <div id="overlay">ARKPAD ROV V3 (EXPERIMENTAL)</div>
 
-  <button id="record-button" onclick="toggleRecording()">Record</button>
 
   <select id="resolution-select" onchange="changeResolution()">
     <option value="640x480">Low Quality</option>
@@ -85,27 +65,11 @@ PAGE = """\
     <option value="2560x1920">2560x1920 (Fisheye HD)</option>
   </select>
 
-  <input type="text" id="save-directory" value="""" + save_dir + """">
-
   <script>
-    var recording = false;
 
     function changeResolution() {
       var selectedResolution = document.getElementById("resolution-select").value;
       fetch('/resolution/' + selectedResolution); // Send request to change resolution
-    }
-
-    function toggleRecording() {
-      recording = !recording; // Toggle recording state
-
-      // Update button text or style based on recording state (optional)
-      if (recording) {
-        document.getElementById("record-button").textContent = "Stop Recording";
-      } else {
-        document.getElementById("record-button").textContent = "Record";
-      }
-
-      // Your existing recording logic here
     }
   </script>
 </body>
@@ -126,13 +90,6 @@ class StreamingOutput(io.BufferedIOBase):
                 video_writer.write(frame)  # Write frame to video
             self.condition.notify_all()
 #######################functions
-    def toggleRecording(recording, video_writer):
-         # Not recommended for global variables, but included for reference
-       recording = not recording
-       if recording:
-    # Start recording
-         filename = f"recording_{time.strftime('%Y-%m-%d_%H-%M-%S')}.avi"
-    # ... rest of recording logic using video_writer
 
 #########################
 
