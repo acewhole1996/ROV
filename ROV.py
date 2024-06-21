@@ -41,7 +41,7 @@ PAGE = """\
 </head>
 <body>
   <img id="video-stream" src="stream.mjpg" />
-  <div id="overlay">ARKPAD ROV V3 (EXPERIMENTAL)</div>
+  <div id="overlay">ARKPAD ROV V3 (EXPERIMENTALS)</div>
   <button id="record-button" onclick="toggleRecording()">Record</button>
   <select id="resolution-select" onchange="changeResolution()">
     <option value="320x240">320x240</option>
