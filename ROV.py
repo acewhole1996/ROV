@@ -60,6 +60,15 @@ PAGE = """\
     border: 1px solid #bbb; /* Add a border */
     cursor: pointer; /* Indicate clickable behavior */
   }
+
+  #save-directory {
+    position: absolute;
+    top: 120px; /* Adjust position as desired */
+    left: 10px; /* Adjust position as desired */
+    padding: 10px 20px; /* Add padding for better appearance */
+    background-color: #eee; /* Set background color */
+    border: 1px solid #ddd; /* Add a border */
+  }
 </style>
 </head>
 <body>
@@ -74,6 +83,9 @@ PAGE = """\
     <option value="1920x1080">1080p</option>
     <option value="2560x1920">2560x1920 (Fisheye HD)</option>
   </select>
+
+  <input type="text" id="save-directory" value="""" + save_dir + """">
+
   <script>
     var recording = false;
 
@@ -100,29 +112,14 @@ PAGE = """\
 """
 #######################functions
 def toggleRecording():
-    global recording, video_writer  # Access global variables
+  global recording, video_writer  # Access global variables
 
-    recording = not recording
+  recording = not recording
 
-    if recording:
-        # Start recording
-        global output  # Assuming output is a StreamingOutput instance
-        filename = f"recording_{time.strftime('%Y-%m-%d_%H-%M-%S')}.avi"  # Generate unique filename
-        videos_folder = os.path.join(os.environ["USERPROFILE"], "Videos")
-        output_path = os.path.join(videos_folder, filename)
-
-        # Create video writer object
-        width, height = picam2.preview_configuration.main["size"]  # Get frame size
-        video_writer = cv2.VideoWriter(output_path, fourcc, 20.0, (width, height))  # Adjust frame rate as needed
-
-        # Update button text
-        document.getElementById("record-button").textContent = "Stop Recording"
-    else:
-        # Stop recording
-        video_writer.release()  # Release video writer object
-
-        # Update button text
-        document.getElementById("record-button").textContent = "Record"
+  if recording:
+    # Start recording
+    global output  # Assuming output is a StreamingOutput instance
+    filename = f"recording_{time.strftime('%Y-%m-%d_%H-%
 
 #########################
 class StreamingOutput(io.BufferedIOBase):
