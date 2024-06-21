@@ -120,7 +120,7 @@ def toggleRecording():
   if recording:
     # Start recording
     global output  # Assuming output is a StreamingOutput instance
-    filename = f"recording_{time.strftime('%Y-%m-%d_%H-%
+    filename = f"recording_{time.strftime('%Y-%m-%d_%H-%M-%S')}.avi"
 
 #########################
 class StreamingOutput(io.BufferedIOBase):
