@@ -3,10 +3,10 @@ import logging
 import socketserver
 from http import server
 from threading import Condition
+
 from picamera2 import Picamera2
 from picamera2.encoders import JpegEncoder
 from picamera2.outputs import FileOutput
-
 
 PAGE = """\
 <!DOCTYPE html>
@@ -41,22 +41,11 @@ PAGE = """\
     right: 10px;
   }
 
-
-
-  #save-directory {
-    position: absolute;
-    top: 120px; /* Adjust position as desired */
-    left: 10px; /* Adjust position as desired */
-    padding: 10px 20px; /* Add padding for better appearance */
-    background-color: #eee; /* Set background color */
-    border: 1px solid #ddd; /* Add a border */
-  }
 </style>
 </head>
 <body>
   <img id="video-stream" src="stream.mjpg" />
   <div id="overlay">ARKPAD ROV V3 (EXPERIMENTAL)</div>
-
 
   <select id="resolution-select" onchange="changeResolution()">
     <option value="640x480">Low Quality</option>
@@ -64,8 +53,8 @@ PAGE = """\
     <option value="1920x1080">1080p</option>
     <option value="2560x1920">2560x1920 (Fisheye HD)</option>
   </select>
-
   <script>
+    var recording = false;
 
     function changeResolution() {
       var selectedResolution = document.getElementById("resolution-select").value;
@@ -75,7 +64,9 @@ PAGE = """\
 </body>
 </html>
 """
+#######################functions
 
+#########################
 class StreamingOutput(io.BufferedIOBase):
     def __init__(self):
         self.frame = None
@@ -84,14 +75,7 @@ class StreamingOutput(io.BufferedIOBase):
     def write(self, buf):
         with self.condition:
             self.frame = buf
-            if recording:
-                # Convert frame to BGR format for OpenCV
-                frame = cv2.imdecode(np.frombuffer(buf, np.uint8), cv2.IMREAD_COLOR)
-                video_writer.write(frame)  # Write frame to video
             self.condition.notify_all()
-#######################functions
-
-#########################
 
 class StreamingHandler(server.BaseHTTPRequestHandler):
     def do_GET(self):
