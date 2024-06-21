@@ -122,6 +122,10 @@ class StreamingOutput(io.BufferedIOBase):
     def write(self, buf):
         with self.condition:
             self.frame = buf
+            if recording:  # Check if recording is active before saving the frame
+                # Save the captured frame to the recording file
+                with open(filename, 'ab') as f:
+                    f.write(buf)
             self.condition.notify_all()
 
 class StreamingHandler(server.BaseHTTPRequestHandler):
