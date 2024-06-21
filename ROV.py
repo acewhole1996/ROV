@@ -1,13 +1,20 @@
 import io
 import logging
+import os
 import socketserver
 from http import server
 from threading import Condition
 
+import cv2  # Import OpenCV library
+
 from picamera2 import Picamera2
 from picamera2.encoders import JpegEncoder
 from picamera2.outputs import FileOutput
+
+
+# Define global variables
 recording = False
+fourcc = cv2.VideoWriter_fourcc(*'XVID')
 
 PAGE = """\
 <!DOCTYPE html>
@@ -92,26 +99,29 @@ PAGE = """\
 """
 #######################functions
 def toggleRecording():
-    global recording  # Access the global recording variable
+    global recording, video_writer  # Access global variables
 
     recording = not recording
 
     if recording:
-        # Start recording and create a new file for captured frames
+        # Start recording
         global output  # Assuming output is a StreamingOutput instance
-        filename = f"recording_{time.strftime('%Y-%m-%d_%H-%M-%S')}.jpg"  # Generate unique filename
-        output = StreamingOutput()  # Create a new output for recording
-        picam2.start_recording(JpegEncoder(), FileOutput(filename))
+        filename = f"recording_{time.strftime('%Y-%m-%d_%H-%M-%S')}.avi"  # Generate unique filename
+        videos_folder = os.path.join(os.environ["USERPROFILE"], "Videos")
+        output_path = os.path.join(videos_folder, filename)
+
+        # Create video writer object
+        width, height = picam2.preview_configuration.main["size"]  # Get frame size
+        video_writer = cv2.VideoWriter(output_path, fourcc, 20.0, (width, height))  # Adjust frame rate as needed
 
         # Update button text
         document.getElementById("record-button").textContent = "Stop Recording"
     else:
         # Stop recording
-        picam2.stop_recording()
+        video_writer.release()  # Release video writer object
 
         # Update button text
         document.getElementById("record-button").textContent = "Record"
-
 
 #########################
 class StreamingOutput(io.BufferedIOBase):
@@ -122,10 +132,10 @@ class StreamingOutput(io.BufferedIOBase):
     def write(self, buf):
         with self.condition:
             self.frame = buf
-            if recording:  # Check if recording is active before saving the frame
-                # Save the captured frame to the recording file
-                with open(filename, 'ab') as f:
-                    f.write(buf)
+            if recording:
+                # Convert frame to BGR format for OpenCV
+                frame = cv2.imdecode(np.frombuffer(buf, np.uint8), cv2.IMREAD_COLOR)
+                video_writer.write(frame)  # Write frame to video
             self.condition.notify_all()
 
 class StreamingHandler(server.BaseHTTPRequestHandler):
