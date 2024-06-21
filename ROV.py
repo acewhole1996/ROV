@@ -7,6 +7,7 @@ from threading import Condition
 from picamera2 import Picamera2
 from picamera2.encoders import JpegEncoder
 from picamera2.outputs import FileOutput
+recording = False
 
 PAGE = """\
 <!DOCTYPE html>
@@ -90,29 +91,28 @@ PAGE = """\
 </html>
 """
 #######################functions
-def changeResolution(self):
-  """
-  This function updates the camera resolution and restarts recording.
+def toggleRecording():
+    global recording  # Access the global recording variable
 
-  Args:
-      output (StreamingOutput): The output instance used for video streaming.
-  """
-  try:
-    # Extract resolution from path
-    global picam2, output
-    resolution_str = self.path.split('/')[2]
-    width, height = map(int, resolution_str.split('x'))
-    picam2.stop_recording()
-    picam2.configure(picam2.create_video_configuration(main={"size": (width, height)}))
-    picam2.start_recording(JpegEncoder(), FileOutput(output))
+    recording = not recording
 
-    self.send_response(200)
-    self.send_header('Content-Type', 'text/plain')
-    self.end_headers()
-    self.wfile.write(b'Resolution changed to: ' + resolution_str.encode())
-  except Exception as e:
-    logging.warning("Error changing resolution: %s", str(e))
-    self.send_error(500)
+    if recording:
+        # Start recording and create a new file for captured frames
+        global output  # Assuming output is a StreamingOutput instance
+        filename = f"recording_{time.strftime('%Y-%m-%d_%H-%M-%S')}.jpg"  # Generate unique filename
+        output = StreamingOutput()  # Create a new output for recording
+        picam2.start_recording(JpegEncoder(), FileOutput(filename))
+
+        # Update button text
+        document.getElementById("record-button").textContent = "Stop Recording"
+    else:
+        # Stop recording
+        picam2.stop_recording()
+
+        # Update button text
+        document.getElementById("record-button").textContent = "Record"
+
+
 #########################
 class StreamingOutput(io.BufferedIOBase):
     def __init__(self):
